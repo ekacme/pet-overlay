@@ -12,16 +12,21 @@ const PUPIL_RY = 3;
 
 export class Loki extends Pet {
   constructor(x: number, y: number) {
-    super(x, y);
+    super(x, y, {
+      maxSpeed: 2,
+      maxForce: 0.1,
+      wanderRadius: 60,
+      wanderWeight: 0.4,
+    });
 
-    this.draw();
+    this.buildBody();
   }
 
   get bodyRadius(): number {
     return BODY_RX * this.size;
   }
 
-  draw() {
+  buildBody() {
     this.container.removeChildren();
 
     const body = new Graphics();
