@@ -2,24 +2,27 @@ import { Container, Graphics, Point } from 'pixi.js';
 import { createNoise2D, type NoiseFunction2D } from 'simplex-noise';
 import { fromAngle, heading, lerp, limit } from './vec';
 
-const PetState = {
+export const PetState = {
   WANDER: 0,
 } as const;
 
 type PetState = (typeof PetState)[keyof typeof PetState];
 
-interface PetConfig {
-  maxSpeed?: number;
-  maxForce?: number;
-  wanderDist?: number;
-  wanderRadius?: number;
-  wanderJitter?: number;
-  wanderWeight?: number;
+export function petStateName(state: PetState): string {
+  return (
+    Object.keys(PetState).find((k) => PetState[k as keyof typeof PetState] === state) ?? 'UNKNOWN'
+  );
 }
 
-export interface AgentLayers {
+export interface PetConfig {
+  maxSpeed: number;
+  wanderRadius: number;
+  wanderWeight: number;
+}
+
+export interface PetLayers {
   debug: Container;
-  agent: Container;
+  pet: Container;
 }
 
 export abstract class Pet {
@@ -41,12 +44,12 @@ export abstract class Pet {
   private noise2D: NoiseFunction2D;
   private noiseTime: number;
 
-  private maxSpeed: number;
+  maxSpeed: number;
   // private maxForce: number;
-  private wanderRadius: number;
-  private wanderWeight: number;
+  wanderRadius: number;
+  wanderWeight: number;
 
-  constructor(x: number, y: number, config: PetConfig = {}, layers: AgentLayers) {
+  constructor(x: number, y: number, config: Partial<PetConfig>, layers: PetLayers) {
     this.position = new Point(x, y);
     this.prevPosition = new Point(x, y);
 
@@ -69,7 +72,7 @@ export abstract class Pet {
     layers.debug.addChild(this.debugGfx);
 
     this.bodyGfx = new Graphics();
-    layers.agent.addChild(this.bodyGfx);
+    layers.pet.addChild(this.bodyGfx);
 
     this.buildBody();
   }
@@ -135,7 +138,7 @@ export abstract class Pet {
     if (!showDebug) return;
 
     const velocityColor = 0x7ee8a2;
-    const wanderColor = 0x3254a8;
+    const wanderColor = 0x5ec4d4;
 
     // Wander circle
     const cx = this.wanderCircleCenter.x;

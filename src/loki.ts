@@ -1,5 +1,5 @@
 import { Graphics } from 'pixi.js';
-import { Pet, type AgentLayers } from './pet';
+import { Pet, type PetLayers, type PetConfig } from './pet';
 
 const BODY_RX = 40;
 const BODY_RY = 20;
@@ -11,14 +11,13 @@ const PUPIL_RX = 2;
 const PUPIL_RY = 3;
 
 export class Loki extends Pet {
-  constructor(x: number, y: number, layers: AgentLayers) {
-    const config = {
+  constructor(x: number, y: number, layers: PetLayers, config: PetConfig) {
+    const defaults: PetConfig = {
       maxSpeed: 2,
-      maxForce: 0.1,
       wanderRadius: 60,
       wanderWeight: 0.4,
     };
-    super(x, y, config, layers);
+    super(x, y, { ...defaults, ...config }, layers);
 
     this.buildBody();
   }

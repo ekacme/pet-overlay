@@ -4,9 +4,74 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>pet-overlay</title>
+    <title>Pet Overlay</title>
+    <link rel="stylesheet" href="/src/style.css" />
   </head>
   <body>
+    <div class="sidebar">
+      <h1>Pet Overlay</h1>
+      <div class="group">
+        <div class="group-label">Behaviour Weights</div>
+        <div class="slider-row">
+          <label>Wander Force<span class="val" id="wanderVal"></span></label>
+          <input type="range" id="wanderWeight" min="0" max="1.5" step="0.05" />
+        </div>
+      </div>
+      <div class="group">
+        <div class="group-label">Pet Properties</div>
+        <div class="slider-row">
+          <label>Max Speed <span class="val" id="speedVal"></span></label>
+          <input type="range" id="maxSpeed" min="0.5" max="8" step="0.25" />
+        </div>
+        <div class="slider-row">
+          <label>Wander Radius <span class="val" id="radiusVal"></span></label>
+          <input type="range" id="wanderRadius" min="10" max="120" step="5" />
+        </div>
+      </div>
+
+      <div class="group">
+        <div class="group-label">Telemetry</div>
+        <div class="telemetry">
+          <div class="telem-item">
+            <div class="tl">Speed</div>
+            <div class="tv" id="tSpeed">0.0</div>
+          </div>
+          <div class="telem-item">
+            <div class="tl">Heading</div>
+            <div class="tv" id="tHeading">0°</div>
+          </div>
+          <div class="telem-item">
+            <div class="tl">State</div>
+            <div class="tv" id="tState">WANDER</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="group">
+        <div class="group-label">Controls</div>
+        <div class="btn-row">
+          <button id="btnPause">Pause</button>
+          <button id="btnReset">Reset</button>
+        </div>
+        <div class="btn-row">
+          <button id="btnDebug" class="active">Debug Vis</button>
+        </div>
+      </div>
+      <div class="group">
+        <div class="group-label">Legend</div>
+        <div class="legend">
+          <div class="legend-item">
+            <div class="legend-dot" style="background: #7ee8a2"></div>
+            Pet velocity vector
+          </div>
+          <div class="legend-item">
+            <div class="legend-dot" style="background: #5ec4d4"></div>
+            Wander circle
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div id="canvas-wrap"></div>
     <script type="module" src="/src/main.ts"></script>
   </body>
