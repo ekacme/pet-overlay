@@ -17,16 +17,18 @@ async function main(): Promise<void> {
   const wrap = el<HTMLDivElement>('canvas-wrap');
 
   function calcSize() {
-    const s = Math.min(wrap.clientWidth - 48, wrap.clientHeight - 48);
+    // const s = Math.min(wrap.clientWidth - 48, wrap.clientHeight - 48);
+    // const result = {
+    //   w: Math.min(s, wrap.clientWidth - 48),
+    //   h: Math.min(s, wrap.clientHeight - 48),
+    // };
+
     const result = {
-      w: Math.min(s, wrap.clientWidth - 48),
-      h: Math.min(s, wrap.clientHeight - 48),
+      w: wrap.clientWidth - 48,
+      h: wrap.clientHeight - 48,
     };
     console.log(result);
-    return {
-      w: Math.min(s, wrap.clientWidth - 48),
-      h: Math.min(s, wrap.clientHeight - 48),
-    };
+    return result;
   }
 
   const initial = calcSize();
