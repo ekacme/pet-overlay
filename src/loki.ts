@@ -1,5 +1,5 @@
 import { Graphics } from 'pixi.js';
-import { Pet } from './pet';
+import { Pet, type AgentLayers } from './pet';
 
 const BODY_RX = 40;
 const BODY_RY = 20;
@@ -11,13 +11,14 @@ const PUPIL_RX = 2;
 const PUPIL_RY = 3;
 
 export class Loki extends Pet {
-  constructor(x: number, y: number) {
-    super(x, y, {
+  constructor(x: number, y: number, layers: AgentLayers) {
+    const config = {
       maxSpeed: 2,
       maxForce: 0.1,
       wanderRadius: 60,
       wanderWeight: 0.4,
-    });
+    };
+    super(x, y, config, layers);
 
     this.buildBody();
   }
@@ -27,12 +28,12 @@ export class Loki extends Pet {
   }
 
   buildBody() {
-    this.container.removeChildren();
+    this.bodyGfx.removeChildren();
 
     const body = new Graphics();
     body.ellipse(0, 0, BODY_RX * this.size, BODY_RY * this.size);
     body.fill('orange');
-    this.container.addChild(body);
+    this.bodyGfx.addChild(body);
 
     const eyeLeft = new Graphics();
     eyeLeft.ellipse(
@@ -42,7 +43,7 @@ export class Loki extends Pet {
       EYE_RY * this.size,
     );
     eyeLeft.fill(0xffffff).stroke({ width: 1, color: 'orange' });
-    this.container.addChild(eyeLeft);
+    this.bodyGfx.addChild(eyeLeft);
 
     const eyeRight = new Graphics();
     eyeRight.ellipse(
@@ -52,7 +53,7 @@ export class Loki extends Pet {
       EYE_RY * this.size,
     );
     eyeRight.fill(0xffffff).stroke({ width: 1, color: 'orange' });
-    this.container.addChild(eyeRight);
+    this.bodyGfx.addChild(eyeRight);
 
     const pupilLeft = new Graphics();
     pupilLeft.ellipse(
@@ -62,7 +63,7 @@ export class Loki extends Pet {
       PUPIL_RY * this.size,
     );
     pupilLeft.fill(0x000000);
-    this.container.addChild(pupilLeft);
+    this.bodyGfx.addChild(pupilLeft);
 
     const pupilRight = new Graphics();
     pupilRight.ellipse(
@@ -72,6 +73,6 @@ export class Loki extends Pet {
       PUPIL_RY * this.size,
     );
     pupilRight.fill(0x000000);
-    this.container.addChild(pupilRight);
+    this.bodyGfx.addChild(pupilRight);
   }
 }
