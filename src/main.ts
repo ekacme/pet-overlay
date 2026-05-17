@@ -73,6 +73,7 @@ async function main(): Promise<void> {
   let showDebug = true;
 
   const petConfig: PetConfig = {
+    petSize: 0.5,
     wanderWeight: 0.4,
     maxSpeed: 2,
     wanderRadius: 60,
@@ -82,6 +83,7 @@ async function main(): Promise<void> {
   const { width: w, height: h } = app.screen;
   function createLoki(): Pet {
     return new Loki(w * 0.3 + Math.random() * w * 0.4, h * 0.3 + Math.random() * h * 0.4, layers, {
+      petSize: cfg('petSize'),
       maxSpeed: cfg('maxSpeed'),
       wanderRadius: cfg('wanderRadius'),
       wanderWeight: cfg('wanderWeight'),
@@ -150,6 +152,12 @@ async function main(): Promise<void> {
     const v = parseFloat(this.value);
     el('wanderVal').textContent = v.toFixed(2);
     pet.wanderWeight = v;
+  });
+
+  el<HTMLInputElement>('petSize').addEventListener('input', function () {
+    const v = parseFloat(this.value);
+    el('sizeVal').textContent = v.toFixed(1);
+    pet.resize(v);
   });
 
   el<HTMLInputElement>('maxSpeed').addEventListener('input', function () {

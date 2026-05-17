@@ -6,12 +6,14 @@
 import type { PetConfig } from './pet';
 
 const SLIDER_IDS: Record<keyof PetConfig, string> = {
+  petSize: 'petSize',
   wanderWeight: 'wanderWeight',
   maxSpeed: 'maxSpeed',
   wanderRadius: 'wanderRadius',
 };
 
 const VAL_IDS: Record<keyof PetConfig, string> = {
+  petSize: 'sizeVal',
   wanderWeight: 'wanderVal',
   maxSpeed: 'speedVal',
   wanderRadius: 'radiusVal',

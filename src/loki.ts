@@ -12,12 +12,7 @@ const PUPIL_RY = 3;
 
 export class Loki extends Pet {
   constructor(x: number, y: number, layers: PetLayers, config: PetConfig) {
-    const defaults: PetConfig = {
-      maxSpeed: 2,
-      wanderRadius: 60,
-      wanderWeight: 0.4,
-    };
-    super(x, y, { ...defaults, ...config }, layers);
+    super(x, y, config, layers);
 
     this.buildBody();
   }

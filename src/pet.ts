@@ -15,6 +15,7 @@ export function petStateName(state: PetState): string {
 }
 
 export interface PetConfig {
+  petSize: number;
   maxSpeed: number;
   wanderRadius: number;
   wanderWeight: number;
@@ -60,9 +61,9 @@ export abstract class Pet {
     this.noise2D = createNoise2D();
     this.noiseTime = Math.random() * 100;
 
-    this.size = 0.5;
     this.state = PetState.WANDER;
 
+    this.size = config.petSize ?? 0.5;
     this.maxSpeed = config.maxSpeed ?? 3;
     // this.maxForce = config.maxForce ?? 0.1;
     this.wanderRadius = config.wanderRadius ?? 50;
@@ -130,6 +131,11 @@ export abstract class Pet {
     // Limit the pet to the container
     this.position.x = Math.max(5, Math.min(canvasW - 5, this.position.x));
     this.position.y = Math.max(5, Math.min(canvasH - 5, this.position.y));
+  }
+
+  resize(newSize: number) {
+    this.size = newSize;
+    this.buildBody();
   }
 
   drawDebug(showDebug: boolean): void {
