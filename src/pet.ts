@@ -42,7 +42,7 @@ export abstract class Pet {
   private noiseTime: number;
 
   private maxSpeed: number;
-  private maxForce: number;
+  // private maxForce: number;
   private wanderRadius: number;
   private wanderWeight: number;
 
@@ -61,7 +61,7 @@ export abstract class Pet {
     this.state = PetState.WANDER;
 
     this.maxSpeed = config.maxSpeed ?? 3;
-    this.maxForce = config.maxForce ?? 0.1;
+    // this.maxForce = config.maxForce ?? 0.1;
     this.wanderRadius = config.wanderRadius ?? 50;
     this.wanderWeight = config.wanderWeight ?? 0.6;
 
