@@ -27,7 +27,6 @@ async function main(): Promise<void> {
       w: wrap.clientWidth - 48,
       h: wrap.clientHeight - 48,
     };
-    console.log(result);
     return result;
   }
 
@@ -79,6 +78,8 @@ async function main(): Promise<void> {
     wanderWeight: 0.4,
     maxSpeed: 2,
     wanderRadius: 60,
+    wallWeight: 1,
+    feelerLength: 100,
   };
   initConfig(petConfig);
 
@@ -89,6 +90,8 @@ async function main(): Promise<void> {
       maxSpeed: cfg('maxSpeed'),
       wanderRadius: cfg('wanderRadius'),
       wanderWeight: cfg('wanderWeight'),
+      wallWeight: cfg('wallWeight'),
+      feelerLength: cfg('feelerLength'),
     });
   }
 
@@ -172,6 +175,18 @@ async function main(): Promise<void> {
     const v = parseFloat(this.value);
     el('radiusVal').textContent = String(v);
     pet.wanderRadius = v;
+  });
+
+  el<HTMLInputElement>('wallWeight').addEventListener('input', function () {
+    const v = parseFloat(this.value);
+    el('wallVal').textContent = String(v);
+    pet.wallWeight = v;
+  });
+
+  el<HTMLInputElement>('feelerLength').addEventListener('input', function () {
+    const v = parseFloat(this.value);
+    el('feelerVal').textContent = String(v);
+    pet.feelerLength = v;
   });
 }
 

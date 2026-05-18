@@ -10,6 +10,8 @@ const SLIDER_IDS: Record<keyof PetConfig, string> = {
   wanderWeight: 'wanderWeight',
   maxSpeed: 'maxSpeed',
   wanderRadius: 'wanderRadius',
+  wallWeight: 'wallWeight',
+  feelerLength: 'feelerLength',
 };
 
 const VAL_IDS: Record<keyof PetConfig, string> = {
@@ -17,6 +19,8 @@ const VAL_IDS: Record<keyof PetConfig, string> = {
   wanderWeight: 'wanderVal',
   maxSpeed: 'speedVal',
   wanderRadius: 'radiusVal',
+  wallWeight: 'wallVal',
+  feelerLength: 'feelerVal',
 };
 
 const sliders = new Map<keyof PetConfig, HTMLInputElement>();
