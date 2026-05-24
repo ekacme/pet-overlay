@@ -1,5 +1,5 @@
 import type { Graphics, Point } from 'pixi.js';
-import type { Pet, PetState } from '../pet';
+import type { Pet, PetState } from '../pets/pet';
 
 export interface SteerContext {
   canvasW: number;

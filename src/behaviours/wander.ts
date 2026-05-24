@@ -1,7 +1,7 @@
 import { Graphics, Point } from 'pixi.js';
 import { createNoise2D, type NoiseFunction2D } from 'simplex-noise';
-import { fromAngle, heading, limit } from '../vec';
-import type { Pet } from '../pet';
+import { fromAngle, heading, limit } from '../engine/vec';
+import type { Pet } from '../pets/pet';
 import type { Behaviour } from './types';
 
 /** Smooth noise-driven roaming around a circle projected ahead of the pet. */

@@ -1,6 +1,5 @@
 import { Graphics } from 'pixi.js';
-
-const WALL_MARGIN = 40;
+import { WALL_MARGIN } from '../world';
 
 /** Draw the subtle background grid. */
 export function drawGrid(gfx: Graphics, w: number, h: number): void {

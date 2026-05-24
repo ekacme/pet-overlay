@@ -162,3 +162,17 @@ button.active {
   border: 1px solid var(--border) !important;
   box-shadow: 0 0 60px rgba(0, 0, 0, 0.5);
 }
+
+#fps {
+  position: absolute;
+  top: 36px;
+  right: 36px;
+  padding: 4px 8px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 11px;
+  letter-spacing: 1px;
+  color: var(--text-dim);
+  pointer-events: none;
+}

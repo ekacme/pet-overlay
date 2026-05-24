@@ -1,6 +1,6 @@
 import { Graphics, Point } from 'pixi.js';
 import { DeformingBodyPet, type PetLayers, type PetConfig } from './pet';
-import { WanderBehaviour, WallAvoidanceBehaviour } from './behaviours';
+import { WanderBehaviour, WallAvoidanceBehaviour } from '../behaviours';
 
 const SWAY_FREQ = 3;
 const SWAY_AMP = 0.5;
@@ -28,10 +28,6 @@ export class Loki extends DeformingBodyPet {
       return new Point(x - off, y);
     });
     this.segAngles = SEGMENTS.map(() => 0);
-  }
-
-  get bodyRadius(): number {
-    return 40 * this.size;
   }
 
   override update(canvasW: number, canvasH: number): void {

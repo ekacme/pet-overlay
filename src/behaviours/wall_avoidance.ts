@@ -1,9 +1,8 @@
 import { Graphics, Point } from 'pixi.js';
-import { fromAngle, heading, limit } from '../vec';
-import { PetState, type Pet } from '../pet';
+import { fromAngle, heading, limit } from '../engine/vec';
+import { PetState, type Pet } from '../pets/pet';
 import type { Behaviour, SteerContext } from './types';
-
-const WALL_MARGIN = 40;
+import { WALL_MARGIN } from '../world';
 
 export interface FeelerHit {
   tip: Point;
@@ -57,7 +56,7 @@ export class WallAvoidanceBehaviour implements Behaviour {
         hit = true;
         overshot = Math.max(overshot, WALL_MARGIN - tip.y);
       }
-      if (tip.y < canvasH - WALL_MARGIN) {
+      if (tip.y > canvasH - WALL_MARGIN) {
         hit = true;
         overshot = Math.max(overshot, tip.y - (canvasH - WALL_MARGIN));
       }

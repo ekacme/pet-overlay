@@ -1,6 +1,6 @@
 import { Container, Graphics, Point } from 'pixi.js';
-import { fromAngle, heading, lerp, limit } from './vec';
-import type { Behaviour, SteerContext } from './behaviours';
+import { fromAngle, heading, lerp, limit } from '../engine/vec';
+import type { Behaviour, SteerContext } from '../behaviours';
 
 export const PetState = {
   WANDER: 0,
@@ -90,8 +90,6 @@ export abstract class Pet {
     this.debugGfx.destroy();
     this.bodyGfx.destroy();
   }
-
-  abstract get bodyRadius(): number;
 
   /** Draw the interpolated body for this frame. The body strategy decides how. */
   abstract render(alpha: number): void;
