@@ -10,6 +10,9 @@ export interface Controls {
   isShowDebug(): boolean;
   setShowDebug(show: boolean): void;
   resetPet(): void;
+  spawnFood(): void;
+  isAutoSpawn(): boolean;
+  setAutoSpawn(on: boolean): void;
 }
 
 /** How each slider value is applied to the live pet. */
@@ -20,6 +23,7 @@ const APPLY: Record<keyof PetConfig, (pet: Pet, v: number) => void> = {
   wanderWeight: (p, v) => (p.wanderWeight = v),
   wallWeight: (p, v) => (p.wallWeight = v),
   feelerLength: (p, v) => (p.feelerLength = v),
+  seekWeight: (p, v) => (p.seekWeight = v),
 };
 
 /** Wire up the buttons and sliders to the running app. */
@@ -37,6 +41,14 @@ export function wireControls(c: Controls): void {
     const show = !c.isShowDebug();
     c.setShowDebug(show);
     this.classList.toggle('active', show);
+  });
+
+  el('btnSpawnFood').addEventListener('click', () => c.spawnFood());
+
+  el('btnAutoSpawn').addEventListener('click', function (this: HTMLButtonElement) {
+    const on = !c.isAutoSpawn();
+    c.setAutoSpawn(on);
+    this.classList.toggle('active', on);
   });
 
   for (const { key, valId, decimals } of SLIDERS) {

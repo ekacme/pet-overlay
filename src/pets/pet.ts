@@ -5,6 +5,7 @@ import type { Behaviour, SteerContext } from '../behaviours';
 export const PetState = {
   WANDER: 0,
   AVOID: 1,
+  SEEK: 2,
 } as const;
 
 export type PetState = (typeof PetState)[keyof typeof PetState];
@@ -22,6 +23,7 @@ export interface PetConfig {
   wanderWeight: number;
   wallWeight: number;
   feelerLength: number;
+  seekWeight: number;
 }
 
 export interface PetLayers {
@@ -56,6 +58,7 @@ export abstract class Pet {
   wanderWeight: number;
   feelerLength: number;
   wallWeight: number;
+  seekWeight: number;
 
   constructor(
     x: number,
@@ -76,6 +79,7 @@ export abstract class Pet {
     this.wanderWeight = config.wanderWeight ?? 0.6;
     this.wallWeight = config.wallWeight ?? 1.8;
     this.feelerLength = config.feelerLength ?? 60;
+    this.seekWeight = config.seekWeight ?? 1.2;
 
     this.behaviours = behaviours;
 
@@ -98,9 +102,7 @@ export abstract class Pet {
     this.acceleration = this.acceleration.add(force);
   }
 
-  update(canvasW: number, canvasH: number) {
-    const ctx: SteerContext = { canvasW, canvasH };
-
+  update(ctx: SteerContext) {
     // Sum the steering forces from every behaviour.
     for (const b of this.behaviours) {
       this.applyForce(b.steer(this, ctx));
@@ -129,8 +131,8 @@ export abstract class Pet {
     this.acceleration.set(0, 0);
 
     // Limit the pet to the container
-    this.position.x = Math.max(5, Math.min(canvasW - 5, this.position.x));
-    this.position.y = Math.max(5, Math.min(canvasH - 5, this.position.y));
+    this.position.x = Math.max(5, Math.min(ctx.canvasW - 5, this.position.x));
+    this.position.y = Math.max(5, Math.min(ctx.canvasH - 5, this.position.y));
   }
 
   resize(newSize: number) {

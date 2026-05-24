@@ -140,6 +140,8 @@ button.active {
   border-color: var(--accent);
 }
 
+.hint { font-size: 10px; color: var(--text-dim); }
+
 .legend { display: flex; flex-direction: column; gap: 6px; font-size: 10px; color: var(--text-dim); }
 .legend-item { display: flex; align-items: center; gap: 8px; }
 .legend-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }

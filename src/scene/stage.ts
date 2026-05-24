@@ -5,6 +5,7 @@ import type { PetLayers } from '../pets';
 export interface Stage {
   app: Application;
   layers: PetLayers;
+  foodLayer: Container;
 }
 
 const WRAP_PADDING = 48;
@@ -31,12 +32,13 @@ export async function createStage(wrap: HTMLElement): Promise<Stage> {
   });
   wrap.appendChild(app.canvas);
 
-  // Draw order: grid → walls → pet → debug overlay.
+  // Draw order: grid → walls → food → pet → debug overlay.
   const gridLayer = new Container();
   const wallLayer = new Container();
+  const foodLayer = new Container();
   const petLayer = new Container();
   const debugLayer = new Container();
-  app.stage.addChild(gridLayer, wallLayer, petLayer, debugLayer);
+  app.stage.addChild(gridLayer, wallLayer, foodLayer, petLayer, debugLayer);
 
   const gridGfx = new Graphics();
   gridLayer.addChild(gridGfx);
@@ -55,5 +57,5 @@ export async function createStage(wrap: HTMLElement): Promise<Stage> {
     drawStatic();
   });
 
-  return { app, layers: { debug: debugLayer, pet: petLayer } };
+  return { app, layers: { debug: debugLayer, pet: petLayer }, foodLayer };
 }

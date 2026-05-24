@@ -20,6 +20,10 @@
           <label>Wall Avoidance <span class="val" id="wallVal"></span></label>
           <input type="range" id="wallWeight" min="0" max="4" step="0.1" />
         </div>
+        <div class="slider-row">
+          <label>Seek Force <span class="val" id="seekVal"></span></label>
+          <input type="range" id="seekWeight" min="0" max="3" step="0.05" />
+        </div>
       </div>
       <div class="group">
         <div class="group-label">Pet Properties</div>
@@ -70,6 +74,14 @@
         </div>
       </div>
       <div class="group">
+        <div class="group-label">Food</div>
+        <div class="btn-row">
+          <button id="btnSpawnFood">Spawn Food</button>
+          <button id="btnAutoSpawn">Auto Spawn</button>
+        </div>
+        <div class="hint">Click the canvas to place food.</div>
+      </div>
+      <div class="group">
         <div class="group-label">Legend</div>
         <div class="legend">
           <div class="legend-item">
@@ -83,6 +95,10 @@
           <div class="legend-item">
             <div class="legend-dot" style="background: #e87e7e"></div>
             Wall feelers &amp; avoidance
+          </div>
+          <div class="legend-item">
+            <div class="legend-dot" style="background: #9be870"></div>
+            Food &amp; seek target
           </div>
         </div>
       </div>

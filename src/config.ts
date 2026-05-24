@@ -15,6 +15,7 @@ export interface SliderSpec {
 export const SLIDERS: readonly SliderSpec[] = [
   { key: 'wanderWeight', valId: 'wanderVal', decimals: 2 },
   { key: 'wallWeight', valId: 'wallVal', decimals: 1 },
+  { key: 'seekWeight', valId: 'seekVal', decimals: 2 },
   { key: 'petSize', valId: 'sizeVal', decimals: 1 },
   { key: 'maxSpeed', valId: 'speedVal', decimals: 1 },
   { key: 'wanderRadius', valId: 'radiusVal', decimals: 0 },

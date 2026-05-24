@@ -1,6 +1,11 @@
 import { Graphics, Point } from 'pixi.js';
 import { DeformingBodyPet, type PetLayers, type PetConfig } from './pet';
-import { WanderBehaviour, WallAvoidanceBehaviour } from '../behaviours';
+import {
+  WanderBehaviour,
+  WallAvoidanceBehaviour,
+  SeekArrivalBehaviour,
+  type SteerContext,
+} from '../behaviours';
 
 const SWAY_FREQ = 3;
 const SWAY_AMP = 0.5;
@@ -21,7 +26,12 @@ export class Loki extends DeformingBodyPet {
   private time = 0;
 
   constructor(x: number, y: number, layers: PetLayers, config: PetConfig) {
-    super(x, y, config, layers, [new WanderBehaviour(), new WallAvoidanceBehaviour()]);
+    // Order sets state precedence (first active wins): avoid > seek > wander.
+    super(x, y, config, layers, [
+      new WallAvoidanceBehaviour(),
+      new SeekArrivalBehaviour(),
+      new WanderBehaviour(),
+    ]);
     let off = 0;
     this.segPositions = SEGMENTS.map((s) => {
       off += s.space * this.size;
@@ -30,8 +40,8 @@ export class Loki extends DeformingBodyPet {
     this.segAngles = SEGMENTS.map(() => 0);
   }
 
-  override update(canvasW: number, canvasH: number): void {
-    super.update(canvasW, canvasH);
+  override update(ctx: SteerContext): void {
+    super.update(ctx);
     this.time += 0.04;
   }
 

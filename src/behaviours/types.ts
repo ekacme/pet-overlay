@@ -4,6 +4,8 @@ import type { Pet, PetState } from '../pets/pet';
 export interface SteerContext {
   canvasW: number;
   canvasH: number;
+  /** Positions of all food currently in the world. */
+  food: readonly Point[];
 }
 
 /**
