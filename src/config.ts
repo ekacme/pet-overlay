@@ -20,6 +20,7 @@ export const SLIDERS: readonly SliderSpec[] = [
   { key: 'maxSpeed', valId: 'speedVal', decimals: 1 },
   { key: 'wanderRadius', valId: 'radiusVal', decimals: 0 },
   { key: 'feelerLength', valId: 'feelerVal', decimals: 0 },
+  { key: 'eatDuration', valId: 'eatVal', decimals: 1 },
 ];
 
 const inputs = new Map<keyof PetConfig, HTMLInputElement>();

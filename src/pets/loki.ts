@@ -45,6 +45,11 @@ export class Loki extends DeformingBodyPet {
     this.time += 0.04;
   }
 
+  override hold(): void {
+    super.hold();
+    this.time += 0.04; // keep the body swaying while eating in place
+  }
+
   drawBody(gfx: Graphics, renderPos: Point): void {
     // Chain each segment behind the previous, clamping joint bend and applying sway
     this.segPositions[0].copyFrom(renderPos);

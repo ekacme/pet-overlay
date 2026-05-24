@@ -11,6 +11,7 @@ export interface Controls {
   setShowDebug(show: boolean): void;
   resetPet(): void;
   spawnFood(): void;
+  clearFood(): void;
   isAutoSpawn(): boolean;
   setAutoSpawn(on: boolean): void;
 }
@@ -24,6 +25,7 @@ const APPLY: Record<keyof PetConfig, (pet: Pet, v: number) => void> = {
   wallWeight: (p, v) => (p.wallWeight = v),
   feelerLength: (p, v) => (p.feelerLength = v),
   seekWeight: (p, v) => (p.seekWeight = v),
+  eatDuration: (p, v) => (p.eatDuration = v),
 };
 
 /** Wire up the buttons and sliders to the running app. */
@@ -44,6 +46,8 @@ export function wireControls(c: Controls): void {
   });
 
   el('btnSpawnFood').addEventListener('click', () => c.spawnFood());
+
+  el('btnClearFood').addEventListener('click', () => c.clearFood());
 
   el('btnAutoSpawn').addEventListener('click', function (this: HTMLButtonElement) {
     const on = !c.isAutoSpawn();

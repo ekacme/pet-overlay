@@ -38,22 +38,34 @@ export class FoodField {
     this.spawn(m + Math.random() * (canvasW - 2 * m), m + Math.random() * (canvasH - 2 * m));
   }
 
-  /** Remove one pellet within `radius` of `pos`. Returns true if one was eaten. */
-  consumeNear(pos: Point, radius: number): boolean {
-    const r2 = radius * radius;
-    for (let i = 0; i < this.items.length; i++) {
-      if (this.items[i].subtract(pos).magnitudeSquared() <= r2) {
-        this.items.splice(i, 1);
-        this.dirty = true;
-        return true;
+  /** Nearest pellet within `radius` of `pos`, or null. Does not remove it. */
+  nearestWithin(pos: Point, radius: number): Point | null {
+    let best: Point | null = null;
+    let bestDist = radius * radius;
+    for (const p of this.items) {
+      const d = p.subtract(pos).magnitudeSquared();
+      if (d <= bestDist) {
+        bestDist = d;
+        best = p;
       }
     }
-    return false;
+    return best;
   }
 
-  clear(): void {
-    if (this.items.length === 0) return;
-    this.items = [];
+  /** Remove a specific pellet (by reference). */
+  remove(food: Point): void {
+    const i = this.items.indexOf(food);
+    if (i !== -1) {
+      this.items.splice(i, 1);
+      this.dirty = true;
+    }
+  }
+
+  /** Remove all pellets, optionally keeping one (e.g. the pellet being eaten). */
+  clear(keep?: Point | null): void {
+    const kept = keep && this.items.includes(keep) ? keep : null;
+    if (this.items.length === (kept ? 1 : 0)) return;
+    this.items = kept ? [kept] : [];
     this.dirty = true;
   }
 

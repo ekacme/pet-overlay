@@ -6,6 +6,7 @@ export const PetState = {
   WANDER: 0,
   AVOID: 1,
   SEEK: 2,
+  EATING: 3,
 } as const;
 
 export type PetState = (typeof PetState)[keyof typeof PetState];
@@ -24,6 +25,8 @@ export interface PetConfig {
   wallWeight: number;
   feelerLength: number;
   seekWeight: number;
+  /** Seconds the pet spends eating a pellet before it's consumed. */
+  eatDuration: number;
 }
 
 export interface PetLayers {
@@ -59,6 +62,7 @@ export abstract class Pet {
   feelerLength: number;
   wallWeight: number;
   seekWeight: number;
+  eatDuration: number;
 
   constructor(
     x: number,
@@ -80,6 +84,7 @@ export abstract class Pet {
     this.wallWeight = config.wallWeight ?? 1.8;
     this.feelerLength = config.feelerLength ?? 60;
     this.seekWeight = config.seekWeight ?? 1.2;
+    this.eatDuration = config.eatDuration ?? 1.5;
 
     this.behaviours = behaviours;
 
@@ -133,6 +138,17 @@ export abstract class Pet {
     // Limit the pet to the container
     this.position.x = Math.max(5, Math.min(ctx.canvasW - 5, this.position.x));
     this.position.y = Math.max(5, Math.min(ctx.canvasH - 5, this.position.y));
+  }
+
+  /**
+   * Hold still for one simulation step while eating: no steering or movement,
+   * but the body keeps facing its last direction. Subclasses may override to
+   * keep animating in place (see {@link Loki}). Drives the EATING state.
+   */
+  hold(): void {
+    this.prevPosition.copyFrom(this.position);
+    this.acceleration.set(0, 0);
+    this.state = PetState.EATING;
   }
 
   resize(newSize: number) {

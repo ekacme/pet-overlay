@@ -1,4 +1,5 @@
 import 'pixi.js/math-extras';
+import type { Point } from 'pixi.js';
 import { Loki, type Pet } from './pets';
 import { initConfig, readConfig } from './config';
 import { createStage } from './scene/stage';
@@ -8,7 +9,8 @@ import { Hud } from './ui/hud';
 import { wireControls } from './ui/controls';
 import { el } from './ui/dom';
 
-const EAT_RADIUS = 16;
+const SIM_HZ = 60;
+const EAT_RADIUS = 4;
 const AUTO_SPAWN_INTERVAL = 2500; // ms
 
 async function main(): Promise<void> {
@@ -24,6 +26,7 @@ async function main(): Promise<void> {
     wallWeight: 1,
     feelerLength: 100,
     seekWeight: 1.2,
+    eatDuration: 1.5,
   });
 
   const { width: w, height: h } = stage.app.screen;
@@ -38,8 +41,10 @@ async function main(): Promise<void> {
   let showDebug = true;
   let autoSpawn = false;
   let lastSpawn = 0;
+  let eatStepsLeft = 0;
+  let eatingFood: Point | null = null;
 
-  const clock = new FixedTimestep(60, 5);
+  const clock = new FixedTimestep(SIM_HZ, 5);
   const hud = new Hud();
 
   // Place food at the clicked canvas point (mapping CSS pixels → screen coords).
@@ -66,8 +71,21 @@ async function main(): Promise<void> {
     const ctx = { canvasW: W, canvasH: H, food: food.positions };
     const { steps, alpha } = clock.tick();
     for (let s = 0; s < steps; s++) {
-      pet.update(ctx);
-      food.consumeNear(pet.position, EAT_RADIUS);
+      if (eatStepsLeft > 0) {
+        // Mid-meal: hold still, then remove the pellet when the timer runs out.
+        pet.hold();
+        if (--eatStepsLeft === 0 && eatingFood) {
+          food.remove(eatingFood);
+          eatingFood = null;
+        }
+      } else {
+        pet.update(ctx);
+        const reached = food.nearestWithin(pet.position, EAT_RADIUS);
+        if (reached) {
+          eatingFood = reached;
+          eatStepsLeft = Math.max(1, Math.round(pet.eatDuration * SIM_HZ));
+        }
+      }
     }
 
     pet.drawDebug(showDebug);
@@ -86,6 +104,7 @@ async function main(): Promise<void> {
       pet = createPet();
     },
     spawnFood: () => food.spawnRandom(stage.app.screen.width, stage.app.screen.height),
+    clearFood: () => food.clear(eatingFood),
     isAutoSpawn: () => autoSpawn,
     setAutoSpawn: (on) => (autoSpawn = on),
   });

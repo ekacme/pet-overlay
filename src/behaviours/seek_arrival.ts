@@ -4,7 +4,7 @@ import { PetState, type Pet } from '../pets/pet';
 import type { Behaviour, SteerContext } from './types';
 
 /** Distance from the target at which the pet starts easing its speed down. */
-const ARRIVE_RADIUS = 80;
+const ARRIVE_RADIUS = 20;
 
 /** Steers toward the nearest food, slowing to a stop as it arrives. */
 export class SeekArrivalBehaviour implements Behaviour {
