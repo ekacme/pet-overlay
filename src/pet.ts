@@ -1,13 +1,13 @@
 import { Container, Graphics, Point } from 'pixi.js';
-import { createNoise2D, type NoiseFunction2D } from 'simplex-noise';
 import { fromAngle, heading, lerp, limit } from './vec';
+import type { Behaviour, SteerContext } from './behaviours';
 
 export const PetState = {
   WANDER: 0,
   AVOID: 1,
 } as const;
 
-type PetState = (typeof PetState)[keyof typeof PetState];
+export type PetState = (typeof PetState)[keyof typeof PetState];
 
 export function petStateName(state: PetState): string {
   return (
@@ -24,20 +24,17 @@ export interface PetConfig {
   feelerLength: number;
 }
 
-export interface FeelerHit {
-  tip: Point;
-  hit: boolean;
-  angle: number;
-  len: number;
-}
-
 export interface PetLayers {
   debug: Container;
   pet: Container;
 }
 
-const WALL_MARGIN = 40;
-
+/**
+ * Shared simulation core for every pet: steering, integration and debug
+ * overlays. Subclasses don't extend this directly — they pick a *body
+ * strategy* by extending {@link StaticBodyPet} or {@link DeformingBodyPet},
+ * which decide how/when geometry is drawn each frame.
+ */
 export abstract class Pet {
   position: Point;
   prevPosition: Point;
@@ -45,54 +42,48 @@ export abstract class Pet {
 
   protected size: number;
   state: PetState = PetState.WANDER;
-  closestWall = 999;
-  feelerHits: FeelerHit[] = [];
 
-  wanderCircleCenter = new Point();
-  wanderTarget = new Point();
+  /** Composable steering behaviours, summed each frame. Supplied by subclasses. */
+  protected behaviours: Behaviour[];
 
   readonly debugGfx: Graphics;
   readonly bodyGfx: Graphics;
 
   private acceleration: Point = new Point();
-  private wanderAngle: number;
-  private noise2D: NoiseFunction2D;
-  private noiseTime: number;
-  private prevWallSteer = new Point();
 
   maxSpeed: number;
-  // private maxForce: number;
   wanderRadius: number;
   wanderWeight: number;
   feelerLength: number;
   wallWeight: number;
 
-  constructor(x: number, y: number, config: Partial<PetConfig>, layers: PetLayers) {
+  constructor(
+    x: number,
+    y: number,
+    config: Partial<PetConfig>,
+    layers: PetLayers,
+    behaviours: Behaviour[],
+  ) {
     this.position = new Point(x, y);
     this.prevPosition = new Point(x, y);
 
     const velocityAngle = Math.random() * Math.PI * 2;
     this.velocity = fromAngle(velocityAngle);
 
-    this.wanderAngle = Math.random() * Math.PI * 2;
-    this.noise2D = createNoise2D();
-    this.noiseTime = Math.random() * 100;
-
     this.size = config.petSize ?? 0.5;
     this.maxSpeed = config.maxSpeed ?? 3;
-    // this.maxForce = config.maxForce ?? 0.1;
     this.wanderRadius = config.wanderRadius ?? 50;
     this.wanderWeight = config.wanderWeight ?? 0.6;
     this.wallWeight = config.wallWeight ?? 1.8;
     this.feelerLength = config.feelerLength ?? 60;
+
+    this.behaviours = behaviours;
 
     this.debugGfx = new Graphics();
     layers.debug.addChild(this.debugGfx);
 
     this.bodyGfx = new Graphics();
     layers.pet.addChild(this.bodyGfx);
-
-    this.buildBody();
   }
 
   destroy(): void {
@@ -101,117 +92,32 @@ export abstract class Pet {
   }
 
   abstract get bodyRadius(): number;
-  abstract buildBody(): void;
 
-  wander() {
-    const h = heading(this.velocity);
-    const wanderDist = this.wanderRadius * 1.5;
-
-    const center = this.position.add(fromAngle(h).multiplyScalar(wanderDist));
-    this.wanderCircleCenter.copyFrom(center);
-
-    this.noiseTime += 0.008;
-    const noiseVal = this.noise2D(this.noiseTime, this.noiseTime * 0.7);
-    this.wanderAngle += noiseVal * 0.12;
-
-    const target = center.add(fromAngle(this.wanderAngle).multiplyScalar(this.wanderRadius));
-    this.wanderTarget.copyFrom(target);
-
-    const desired = target.subtract(this.position);
-    const desiredNorm = desired.normalize().multiplyScalar(this.maxSpeed);
-    const steer = limit(desiredNorm.subtract(this.velocity), 0.3);
-
-    return steer.multiplyScalar(this.wanderWeight);
-  }
-
-  private wallAvoidance(canvasW: number, canvasH: number): Point {
-    const h = heading(this.velocity);
-    const maxForce = this.maxSpeed * 0.18;
-    const canvasCenter = new Point(canvasW / 2, canvasH / 2);
-
-    const angles = [0, 0.45, -0.45];
-    const lengths = [this.feelerLength, this.feelerLength * 0.7, this.feelerLength * 0.7];
-    let steer = new Point();
-    this.feelerHits = [];
-
-    const dists = [
-      this.position.x - WALL_MARGIN,
-      canvasW - WALL_MARGIN - this.position.x,
-      this.position.y - WALL_MARGIN,
-      canvasH - WALL_MARGIN - this.position.y,
-    ];
-    this.closestWall = Math.max(0, Math.min(...dists));
-
-    for (let i = 0; i < 3; i++) {
-      const feelerAngle = h + angles[i];
-      const tip = this.position.add(fromAngle(feelerAngle).multiplyScalar(lengths[i]));
-      let hit = false;
-      let overshot = 0;
-      if (tip.x < WALL_MARGIN) {
-        hit = true;
-        overshot = Math.max(overshot, WALL_MARGIN - tip.x);
-      }
-      if (tip.x > canvasW - WALL_MARGIN) {
-        hit = true;
-        overshot = Math.max(overshot, tip.x - (canvasW - WALL_MARGIN));
-      }
-      if (tip.y < WALL_MARGIN) {
-        hit = true;
-        overshot = Math.max(overshot, WALL_MARGIN - tip.y);
-      }
-      if (tip.y < canvasH - WALL_MARGIN) {
-        hit = true;
-        overshot = Math.max(overshot, tip.y - (canvasH - WALL_MARGIN));
-      }
-
-      this.feelerHits.push({ tip, hit, angle: feelerAngle, len: lengths[i] });
-
-      if (hit) {
-        const toCenter = canvasCenter.subtract(this.position);
-        const desired = toCenter.normalize().multiplyScalar(this.maxSpeed);
-        const force = limit(desired.subtract(this.velocity), maxForce);
-        const t = Math.min(overshot / this.feelerLength, 1.0);
-        steer = steer.add(force.multiplyScalar(t * t * t * 0.8));
-      }
-    }
-
-    const proximityThreshold = WALL_MARGIN * 2.5;
-    const closestDist = Math.min(...dists);
-    if (closestDist < proximityThreshold) {
-      const t = 1.0 - closestDist / proximityThreshold;
-      const toCenter = canvasCenter.subtract(this.position);
-      const desired = toCenter.normalize().multiplyScalar(this.maxSpeed);
-      const force = limit(desired.subtract(this.velocity), maxForce);
-      steer = steer.add(force.multiplyScalar(t * t * t * 0.8));
-    }
-
-    const raw = limit(steer, maxForce);
-    const smoothing = 0.15;
-    this.prevWallSteer = new Point(
-      this.prevWallSteer.x + (raw.x - this.prevWallSteer.x) * smoothing,
-      this.prevWallSteer.y + (raw.y - this.prevWallSteer.y) * smoothing,
-    );
-
-    return this.prevWallSteer.multiplyScalar(this.wallWeight);
-  }
+  /** Draw the interpolated body for this frame. The body strategy decides how. */
+  abstract render(alpha: number): void;
 
   applyForce(force: Point) {
     this.acceleration = this.acceleration.add(force);
   }
 
   update(canvasW: number, canvasH: number) {
-    const wanderForce = this.wander();
-    const wallForce = this.wallAvoidance(canvasW, canvasH);
+    const ctx: SteerContext = { canvasW, canvasH };
 
-    // Apply forces
-    this.applyForce(wanderForce);
-    this.applyForce(wallForce);
-
-    if (wallForce.magnitude() > 0.3) {
-      this.state = PetState.AVOID;
-    } else {
-      this.state = PetState.WANDER;
+    // Sum the steering forces from every behaviour.
+    for (const b of this.behaviours) {
+      this.applyForce(b.steer(this, ctx));
     }
+
+    // First behaviour that wants to report a state wins; otherwise wander.
+    let nextState: PetState = PetState.WANDER;
+    for (const b of this.behaviours) {
+      const s = b.activeState?.();
+      if (s != null) {
+        nextState = s;
+        break;
+      }
+    }
+    this.state = nextState;
 
     this.velocity = limit(this.velocity.add(this.acceleration), this.maxSpeed);
     if (this.velocity.magnitude() < 0.5) {
@@ -231,7 +137,6 @@ export abstract class Pet {
 
   resize(newSize: number) {
     this.size = newSize;
-    this.buildBody();
   }
 
   drawDebug(showDebug: boolean): void {
@@ -239,64 +144,72 @@ export abstract class Pet {
     this.debugGfx.visible = showDebug;
     if (!showDebug) return;
 
-    const velocityColor = 0x7ee8a2;
-    const wanderColor = 0x5ec4d4;
-
-    // Wander circle
-    const cx = this.wanderCircleCenter.x;
-    const cy = this.wanderCircleCenter.y;
-    const segs = 32;
-    for (let i = 0; i < segs; i += 2) {
-      const a1 = (i / segs) * Math.PI * 2;
-      const a2 = ((i + 1) / segs) * Math.PI * 2;
-      this.debugGfx.moveTo(
-        cx + Math.cos(a1) * this.wanderRadius,
-        cy + Math.sin(a1) * this.wanderRadius,
-      );
-      this.debugGfx.lineTo(
-        cx + Math.cos(a2) * this.wanderRadius,
-        cy + Math.sin(a2) * this.wanderRadius,
-      );
-    }
-    this.debugGfx.stroke({ width: 1, color: wanderColor, alpha: 0.5 });
-
-    // Wander target dot
-    this.debugGfx.circle(this.wanderTarget.x, this.wanderTarget.y, 4);
-    this.debugGfx.fill({ color: wanderColor, alpha: 0.6 });
-
-    // Line to wander target
-    this.debugGfx.moveTo(this.position.x, this.position.y);
-    this.debugGfx.lineTo(this.wanderTarget.x, this.wanderTarget.y);
-    this.debugGfx.stroke({ width: 1, color: wanderColor, alpha: 0.15 });
-
-    // Feelers
-    for (const f of this.feelerHits) {
-      this.debugGfx.moveTo(this.position.x, this.position.y);
-      this.debugGfx.lineTo(f.tip.x, f.tip.y);
-      this.debugGfx.stroke({
-        width: f.hit ? 2 : 1,
-        color: f.hit ? 0xe87e7e : 0xe8a24e,
-        alpha: f.hit ? 0.7 : 0.15,
-      });
-
-      if (f.hit) {
-        this.debugGfx.circle(f.tip.x, f.tip.y, 4);
-        this.debugGfx.fill({ color: 0xe87e7e, alpha: 0.8 });
-      }
+    // Each behaviour draws its own overlay (feelers, wander circle, ...).
+    for (const b of this.behaviours) {
+      b.drawDebug?.(this, this.debugGfx);
     }
 
     // Velocity vector
+    const velocityColor = 0x7ee8a2;
     const vEnd = this.position.add(this.velocity.normalize().multiplyScalar(25));
     this.debugGfx.moveTo(this.position.x, this.position.y);
     this.debugGfx.lineTo(vEnd.x, vEnd.y);
     this.debugGfx.stroke({ width: 1.5, color: velocityColor, alpha: 1 });
   }
+}
 
-  render(alpha: number) {
+/**
+ * Body strategy for rigid shapes: geometry is drawn **once** into `bodyGfx`
+ * (in local space) and reused. Each frame only the container's position and
+ * rotation change, so movement is cheap. The geometry is rebuilt lazily after
+ * construction or a resize — never from the constructor, so subclass fields are
+ * guaranteed to be initialised by the time {@link buildBody} runs.
+ */
+export abstract class StaticBodyPet extends Pet {
+  private bodyDirty = true;
+
+  /** Draw the body once, in local space (origin = pet position, +x = forward). */
+  abstract buildBody(gfx: Graphics): void;
+
+  override resize(newSize: number): void {
+    super.resize(newSize);
+    this.bodyDirty = true;
+  }
+
+  render(alpha: number): void {
+    if (this.bodyDirty) {
+      this.bodyGfx.clear();
+      this.buildBody(this.bodyGfx);
+      this.bodyDirty = false;
+    }
+
     const renderPos = lerp(this.prevPosition, this.position, alpha);
-    const h = heading(this.velocity);
-
     this.bodyGfx.position.set(renderPos.x, renderPos.y);
-    this.bodyGfx.rotation = h;
+    this.bodyGfx.rotation = heading(this.velocity);
+  }
+}
+
+/**
+ * Body strategy for deforming shapes (undulating chains, flapping wings):
+ * `bodyGfx` is cleared and redrawn in world space every frame. The container
+ * transform is reset to identity; the subclass draws everything itself.
+ */
+export abstract class DeformingBodyPet extends Pet {
+  /**
+   * Redraw the whole body for this frame.
+   * @param gfx       cleared graphics to draw into (world space)
+   * @param renderPos interpolated pet position for this frame
+   * @param heading   current facing angle, in radians
+   */
+  abstract drawBody(gfx: Graphics, renderPos: Point, heading: number): void;
+
+  render(alpha: number): void {
+    const renderPos = lerp(this.prevPosition, this.position, alpha);
+
+    this.bodyGfx.position.set(0, 0);
+    this.bodyGfx.rotation = 0;
+    this.bodyGfx.clear();
+
+    this.drawBody(this.bodyGfx, renderPos, heading(this.velocity));
   }
 }
